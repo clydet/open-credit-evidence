@@ -2,9 +2,10 @@
 # See docs/WED_GATE.md for usage. Not an HTTP server. Not hosted on Axis/OpenShift.
 #
 # Quick start:
-#   docker compose run --rm evidence --stub        # stub mode, no API
-#   docker compose run --rm evidence               # live mode (needs NVIDIA_API_KEY)
-#   docker compose run --rm evidence --help        # show options
+#   docker compose run --rm evidence                                              # stub (default)
+#   docker compose run --rm evidence python scripts/run_wed_gate.py               # live
+#   docker compose run --rm evidence python scripts/run_wed_gate.py --rag         # live + RAG
+#   docker compose run --rm evidence python scripts/run_wed_gate.py --help        # help
 #
 # Outputs persist in ./packs/underwriter-sample/runs/ on the host.
 

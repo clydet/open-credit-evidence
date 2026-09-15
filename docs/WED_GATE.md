@@ -9,13 +9,13 @@ to run it and what to expect.
 The easiest way to run the gate:
 
 ```bash
-# Stub mode (no API key needed)
-docker compose run --rm evidence --stub
+# Stub mode (default command, no API key needed)
+docker compose run --rm evidence
 
 # Live mode (needs NVIDIA_API_KEY in .env)
 cp .env.example .env
 # Edit .env with your API key
-docker compose run --rm evidence
+docker compose run --rm evidence python scripts/run_wed_gate.py
 ```
 
 Outputs persist in `./packs/underwriter-sample/runs/` on your host.
@@ -24,26 +24,30 @@ Outputs persist in `./packs/underwriter-sample/runs/` on your host.
 
 | Service | Description | Example |
 |---------|-------------|---------|
-| `evidence` | Run the Wednesday gate | `docker compose run --rm evidence --stub` |
+| `evidence` | Run the Wednesday gate | `docker compose run --rm evidence` |
 | `test` | Run all tests | `docker compose run --rm test` |
 | `demo` | Show Week 1 demo gate | `docker compose run --rm demo` |
 
 ### Compose Commands
 
+**Note:** `docker compose run SERVICE [CMD...]` replaces the entire command.
+The `evidence` service defaults to stub mode. To run live or with options,
+specify the full command.
+
 ```bash
 # Build the image
 docker compose build
 
-# Run wed gate in stub mode (default)
+# Stub mode (default)
 docker compose run --rm evidence
 
-# Run wed gate with live API
+# Live mode (no --stub flag)
 docker compose run --rm evidence python scripts/run_wed_gate.py
 
-# Run wed gate with RAG
+# Live mode with RAG
 docker compose run --rm evidence python scripts/run_wed_gate.py --rag
 
-# Run with specific run ID
+# Stub with specific run ID
 docker compose run --rm evidence python scripts/run_wed_gate.py --stub --run-id my-run
 
 # Run tests
