@@ -4,7 +4,71 @@ The Wednesday gate runs 20 cases through the full pipeline:
 cases → transcripts → marks → evidence. This document explains how
 to run it and what to expect.
 
-## Prerequisites
+## Quick Start with Docker Compose
+
+The easiest way to run the gate:
+
+```bash
+# Stub mode (no API key needed)
+docker compose run --rm evidence --stub
+
+# Live mode (needs NVIDIA_API_KEY in .env)
+cp .env.example .env
+# Edit .env with your API key
+docker compose run --rm evidence
+```
+
+Outputs persist in `./packs/underwriter-sample/runs/` on your host.
+
+## Docker Compose Services
+
+| Service | Description | Example |
+|---------|-------------|---------|
+| `evidence` | Run the Wednesday gate | `docker compose run --rm evidence --stub` |
+| `test` | Run all tests | `docker compose run --rm test` |
+| `demo` | Show Week 1 demo gate | `docker compose run --rm demo` |
+
+### Compose Commands
+
+```bash
+# Build the image
+docker compose build
+
+# Run wed gate in stub mode (default)
+docker compose run --rm evidence
+
+# Run wed gate with live API
+docker compose run --rm evidence python scripts/run_wed_gate.py
+
+# Run wed gate with RAG
+docker compose run --rm evidence python scripts/run_wed_gate.py --rag
+
+# Run with specific run ID
+docker compose run --rm evidence python scripts/run_wed_gate.py --stub --run-id my-run
+
+# Run tests
+docker compose run --rm test
+
+# Run demo gate
+docker compose run --rm demo
+
+# View help
+docker compose run --rm evidence python scripts/run_wed_gate.py --help
+```
+
+### Volume Mounts
+
+The compose setup mounts these directories:
+- `./packs` → `/app/packs` — all run outputs persist here
+- `./specs` → `/app/specs` — SDD specifications
+
+Run artifacts appear at `./packs/underwriter-sample/runs/<run_id>/` on your host.
+
+---
+
+## Running Locally (without Docker)
+
+### Prerequisites
 
 1. **Python 3.12+** with the package installed:
    ```bash
@@ -17,8 +81,6 @@ to run it and what to expect.
    export NVIDIA_API_KEY=your_key_here
    # or put it in a gitignored .env file
    ```
-
-## Running the Gate
 
 ### Quick Start (Stub Mode)
 

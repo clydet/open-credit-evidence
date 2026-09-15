@@ -7,9 +7,20 @@ decision, and produces the evidence a second-line reviewer needs to approve them
 - `BUILD.md` — the specification and task tracker
 - `docs/` — model selection, distillation note, Wednesday gate guide
 
-## Run the Wednesday Gate
+## Quick Start with Docker Compose
 
-The Wednesday gate runs 20 cases through the full pipeline:
+```bash
+# Stub mode (no API key needed)
+docker compose run --rm evidence --stub
+
+# Live mode (needs NVIDIA_API_KEY)
+cp .env.example .env  # then add your key
+docker compose run --rm evidence
+```
+
+Outputs persist in `./packs/underwriter-sample/runs/`.
+
+## Run Locally
 
 ```bash
 python3 -m venv .venv && .venv/bin/pip install -e ".[dev]"

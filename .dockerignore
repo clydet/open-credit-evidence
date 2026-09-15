@@ -1,0 +1,37 @@
+# Git
+.git/
+.gitignore
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+
+# Build artifacts
+build/
+dist/
+
+# Secrets (never in image)
+.env
+*.env
+
+# IDE
+.vscode/
+.idea/
+
+# Temporary and generated
+tmp/
+*.log
+
+# Notebooks (not needed for CLI)
+notebooks/
+
+# Run artifacts (mounted at runtime)
+packs/*/runs/
+packs/*/artifacts/
+packs/*/answer_key.json
+packs/*/sdd_book.parquet

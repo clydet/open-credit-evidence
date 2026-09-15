@@ -1,0 +1,40 @@
+# Credit Evidence Engine — Docker Compose
+# See docs/WED_GATE.md for usage. Not an HTTP server. Not hosted on Axis/OpenShift.
+#
+# Quick start:
+#   docker compose run --rm evidence --stub        # stub mode, no API
+#   docker compose run --rm evidence               # live mode (needs NVIDIA_API_KEY)
+#   docker compose run --rm evidence --help        # show options
+#
+# Outputs persist in ./packs/underwriter-sample/runs/ on the host.
+
+services:
+  evidence:
+    build: .
+    image: credit-evidence-engine:local
+    environment:
+      # API key from .env file or environment
+      NVIDIA_API_KEY: ${NVIDIA_API_KEY:-}
+      # Python unbuffered for real-time output
+      PYTHONUNBUFFERED: "1"
+    volumes:
+      # Mount packs directory for persisted artifacts (transcripts, marks, evidence)
+      - ./packs:/app/packs
+      # Mount specs in case they're referenced
+      - ./specs:/app/specs
+    # Default: run wed gate in stub mode (safe default, no API needed)
+    command: ["python", "scripts/run_wed_gate.py", "--stub"]
+
+  # Run tests
+  test:
+    build: .
+    image: credit-evidence-engine:local
+    command: ["python", "-m", "pytest", "tests/", "-v"]
+
+  # Show demo gate (Week 1)
+  demo:
+    build: .
+    image: credit-evidence-engine:local
+    volumes:
+      - ./packs:/app/packs
+    command: ["python", "scripts/demo_gate.py"]
