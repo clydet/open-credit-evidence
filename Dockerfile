@@ -23,5 +23,11 @@ COPY docs ./docs
 # Install the package
 RUN pip install --no-cache-dir -e ".[dev]"
 
-# Default: show help for the wed gate script
-CMD ["python", "scripts/run_wed_gate.py", "--help"]
+# Make entrypoint executable
+RUN chmod +x scripts/docker-entrypoint.sh
+
+# Entrypoint passes args to run_wed_gate.py
+ENTRYPOINT ["scripts/docker-entrypoint.sh"]
+
+# Default: stub mode (safe, no API key needed)
+CMD ["--stub"]

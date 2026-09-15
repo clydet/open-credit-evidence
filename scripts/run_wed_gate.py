@@ -69,9 +69,14 @@ def main() -> int:
         help="Use stub responses (no API calls)",
     )
     parser.add_argument(
+        "--live",
+        action="store_true",
+        help="Use live API (default when not --stub; explicit for Docker UX)",
+    )
+    parser.add_argument(
         "--rag",
         action="store_true",
-        help="Use RAG retrieval (requires embed endpoint)",
+        help="Use RAG retrieval (implies live API)",
     )
     parser.add_argument(
         "--skip-run",
@@ -84,6 +89,11 @@ def main() -> int:
         help="Verbose output",
     )
     args = parser.parse_args()
+
+    # Resolve stub vs live: --rag implies live, --live overrides --stub
+    use_stub = args.stub
+    if args.rag or args.live:
+        use_stub = False
 
     print("=" * 70)
     print("WEDNESDAY GATE — Credit Evidence Engine")
@@ -106,7 +116,7 @@ def main() -> int:
         run_id=args.run_id,
         use_rag=args.rag,
         skip_existing=True,
-        stub=args.stub,
+        stub=use_stub,
         output_dir=args.output,
     )
 
@@ -121,7 +131,7 @@ def main() -> int:
             return 1
     else:
         print(f"\n[2/5] Running {len(pack.items)} items through assistant...")
-        print(f"  Mode: {'STUB' if args.stub else 'LIVE (Lightning)'}")
+        print(f"  Mode: {'STUB' if use_stub else 'LIVE (Lightning)'}")
         print(f"  RAG: {'ON' if args.rag else 'OFF (whole-file)'}")
         print(f"  Output: {output_dir}")
 
@@ -182,7 +192,7 @@ def main() -> int:
         transcripts_dir=transcripts_dir,
         metadata={
             "generator": "run_wed_gate.py",
-            "stub_mode": args.stub,
+            "stub_mode": use_stub,
             "rag_mode": args.rag,
         },
     )

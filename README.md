@@ -10,14 +10,13 @@ decision, and produces the evidence a second-line reviewer needs to approve them
 ## Quick Start with Docker Compose
 
 ```bash
-# Stub mode (default, no API key needed)
-docker compose run --rm evidence
-
-# Live mode (needs NVIDIA_API_KEY)
-cp .env.example .env  # then add your key
-docker compose run --rm evidence python scripts/run_wed_gate.py
+docker compose run --rm evidence              # stub (default)
+docker compose run --rm evidence --live       # live API
+docker compose run --rm evidence --rag        # live + RAG
+docker compose run --rm evidence --help       # help
 ```
 
+For live mode, copy `.env.example` to `.env` and add your `NVIDIA_API_KEY`.
 Outputs persist in `./packs/underwriter-sample/runs/`.
 
 ## Run Locally

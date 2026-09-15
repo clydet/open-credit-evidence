@@ -6,67 +6,32 @@ to run it and what to expect.
 
 ## Quick Start with Docker Compose
 
-The easiest way to run the gate:
-
 ```bash
-# Stub mode (default command, no API key needed)
+# Stub mode (default, no API key needed)
 docker compose run --rm evidence
 
 # Live mode (needs NVIDIA_API_KEY in .env)
-cp .env.example .env
-# Edit .env with your API key
-docker compose run --rm evidence python scripts/run_wed_gate.py
+cp .env.example .env  # add your key
+docker compose run --rm evidence --live
 ```
 
 Outputs persist in `./packs/underwriter-sample/runs/` on your host.
 
-## Docker Compose Services
-
-| Service | Description | Example |
-|---------|-------------|---------|
-| `evidence` | Run the Wednesday gate | `docker compose run --rm evidence` |
-| `test` | Run all tests | `docker compose run --rm test` |
-| `demo` | Show Week 1 demo gate | `docker compose run --rm demo` |
-
-### Compose Commands
-
-**Note:** `docker compose run SERVICE [CMD...]` replaces the entire command.
-The `evidence` service defaults to stub mode. To run live or with options,
-specify the full command.
+### Commands
 
 ```bash
-# Build the image
-docker compose build
-
-# Stub mode (default)
-docker compose run --rm evidence
-
-# Live mode (no --stub flag)
-docker compose run --rm evidence python scripts/run_wed_gate.py
-
-# Live mode with RAG
-docker compose run --rm evidence python scripts/run_wed_gate.py --rag
-
-# Stub with specific run ID
-docker compose run --rm evidence python scripts/run_wed_gate.py --stub --run-id my-run
-
-# Run tests
-docker compose run --rm test
-
-# Run demo gate
-docker compose run --rm demo
-
-# View help
-docker compose run --rm evidence python scripts/run_wed_gate.py --help
+docker compose run --rm evidence              # stub (default)
+docker compose run --rm evidence --live       # live API
+docker compose run --rm evidence --rag        # live + RAG
+docker compose run --rm evidence --help       # help
+docker compose run --rm evidence --run-id X   # named run (stub)
+docker compose run --rm evidence --live --run-id X   # named run (live)
 ```
 
 ### Volume Mounts
 
-The compose setup mounts these directories:
-- `./packs` → `/app/packs` — all run outputs persist here
+- `./packs` → `/app/packs` — transcripts, marks, evidence persist here
 - `./specs` → `/app/specs` — SDD specifications
-
-Run artifacts appear at `./packs/underwriter-sample/runs/<run_id>/` on your host.
 
 ---
 
