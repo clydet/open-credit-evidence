@@ -1,0 +1,90 @@
+name: deploy-via-vpn
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y openvpn openvpn-systemd-resolved sshpass rsync
+
+      - name: Write VPN config from secret
+        env:
+          VPN_CONFIG: ${{ secrets.VPN_CONFIG }}
+        run: |
+          test -n "$VPN_CONFIG" || { echo "VPN_CONFIG secret missing"; exit 1; }
+          printf '%s\n' "$VPN_CONFIG" > /tmp/client.ovpn
+          chmod 600 /tmp/client.ovpn
+          if grep -qE '^auth-user-pass' /tmp/client.ovpn; then
+            echo "Profile requires auth-user-pass; this workflow expects cert-only AWS Client VPN"
+            exit 1
+          fi
+
+      - name: Connect VPN
+        run: |
+          sudo openvpn --config /tmp/client.ovpn --daemon \
+            --writepid /tmp/openvpn.pid --log /tmp/openvpn.log
+          for i in $(seq 1 60); do
+            if ip -br link | grep -qE '^tun|^tap'; then
+              echo "VPN interface is up"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "VPN failed to come up"; sudo tail -n 100 /tmp/openvpn.log
+          exit 1
+
+      - name: Sync to remote home and start durable job
+        env:
+          SSHPASS: ${{ secrets.SSH_PASSWORD }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          REMOTE_DIR: ${{ secrets.REMOTE_DIR }}
+          START_CMD: ${{ secrets.START_CMD }}
+        run: |
+          set -euo pipefail
+
+          for i in $(seq 1 30); do
+            sshpass -e ssh -o StrictHostKeyChecking=accept-new \
+              -o ConnectTimeout=5 \
+              "${SSH_USER}@${SSH_HOST}" 'echo ok' && break
+            sleep 2
+          done
+
+          rsync -az --delete \
+            -e "sshpass -e ssh -o StrictHostKeyChecking=accept-new" \
+            ./deploy-src/ \
+            "${SSH_USER}@${SSH_HOST}:~/${REMOTE_DIR}/"
+
+          sshpass -e ssh -o StrictHostKeyChecking=accept-new \
+            "${SSH_USER}@${SSH_HOST}" \
+            env REMOTE_DIR="$REMOTE_DIR" START_CMD="$START_CMD" bash -s <<'REMOTE'
+          set -euo pipefail
+          cd "$HOME/$REMOTE_DIR"
+          mkdir -p logs
+          if [ -f logs/job.pid ] && kill -0 "$(cat logs/job.pid)" 2>/dev/null; then
+            kill "$(cat logs/job.pid)" || true
+            sleep 1
+          fi
+          nohup bash -lc "$START_CMD" > logs/job.out 2>&1 &
+          echo $! > logs/job.pid
+          disown || true
+          sleep 1
+          kill -0 "$(cat logs/job.pid)"
+          echo "started pid=$(cat logs/job.pid)"
+          REMOTE
+
+      - name: Tear down VPN
+        if: always()
+        run: |
+          if [ -f /tmp/openvpn.pid ]; then
+            sudo kill "$(cat /tmp/openvpn.pid)" || true
+          fi
