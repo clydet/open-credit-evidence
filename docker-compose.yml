@@ -1,0 +1,23 @@
+# Credit Evidence Engine — Docker Compose
+# See docs/WED_GATE.md for usage. Not an HTTP server. Not hosted on Axis/OpenShift.
+#
+# Usage:
+#   docker compose run --rm evidence              # stub (default, no API)
+#   docker compose run --rm evidence --live       # live API
+#   docker compose run --rm evidence --rag        # live + RAG
+#   docker compose run --rm evidence --help       # help
+#   docker compose run --rm evidence --run-id X   # named run
+#
+# Outputs persist in ./packs/underwriter-sample/runs/ on the host.
+
+services:
+  evidence:
+    build: .
+    image: credit-evidence-engine:local
+    environment:
+      NVIDIA_API_KEY: ${NVIDIA_API_KEY:-}
+      PYTHONUNBUFFERED: "1"
+    volumes:
+      - ./packs:/app/packs
+      - ./specs:/app/specs
+    # Default CMD is --stub (from Dockerfile); override with flags after service name

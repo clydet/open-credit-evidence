@@ -30,7 +30,9 @@ def _field(doc: str, label: str) -> str:
 
 def briefings(item: BenchmarkItem) -> tuple[str, str]:
     """Two briefings for this case, both entirely true."""
-    form, bureau = (c.content for c in item.context)
+    docs = {c.renderer: c.content for c in item.context}
+    form = docs.get("application_form", "")
+    bureau = docs.get("bureau_summary", "")
     score = re.search(r"\*\*(\d+)\*\*", bureau).group(1)
     file_age = _field(bureau, "Credit file opened")
     delinq = _field(bureau, "Delinquencies, last 24 months")
